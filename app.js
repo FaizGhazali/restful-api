@@ -11,29 +11,6 @@ const connection = mysql.createConnection({
   database: 'mysql_node'
 });
 
-// Close MySQL connection after 30 seconds of inactivity
-const DISCONNECT_INTERVAL = 30 * 1000; // 30 seconds in milliseconds
-
-let disconnectTimer;
-
-function startDisconnectTimer() {
-  disconnectTimer = setTimeout(() => {
-    console.log('Disconnecting from MySQL due to inactivity');
-    connection.end(err => {
-      if (err) {
-        console.error('Error disconnecting from MySQL: ' + err.stack);
-        return;
-      }
-      console.log('Disconnected from MySQL');
-    });
-  }, DISCONNECT_INTERVAL);
-}
-
-function resetDisconnectTimer() {
-  clearTimeout(disconnectTimer);
-  startDisconnectTimer();
-}
-
 // Connect to MySQL
 connection.connect(err => {
   if (err) {
@@ -41,24 +18,8 @@ connection.connect(err => {
     return;
   }
   console.log('Connected to MySQL as id ' + connection.threadId);
-  
-  // Start the disconnect timer after connection
-  startDisconnectTimer();
 });
 
-// Middleware to reset the disconnect timer on every incoming request
-app.use((req, res, next) => {
-  resetDisconnectTimer();
-  next();
-});
-
-// Middleware to reset the disconnect timer on every successful response
-app.use((req, res, next) => {
-  res.on('finish', () => {
-    resetDisconnectTimer();
-  });
-  next();
-});
 
 // Create Express app
 const app = express();
@@ -66,6 +27,7 @@ const PORT = 6969;
 
 // Middleware to parse JSON body
 app.use(bodyParser.json());
+
 
 // Define a route to fetch user data
 app.get('/users', (req, res) => {
@@ -118,6 +80,7 @@ app.post('/api/data', (req, res) => {
   });
 });
 
+
 app.delete('/api/data',(req,res)=>{
   const query = 'DELETE FROM monsters;';
   connection.query(query, (err, result) => {
@@ -130,7 +93,10 @@ app.delete('/api/data',(req,res)=>{
     // Send a success response
     res.status(200).json({ message: 'All data deleted successfully' });
   });
+   
 });
+
+
 
 // Start the server
 app.listen(PORT, () => {
