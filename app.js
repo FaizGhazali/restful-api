@@ -4,22 +4,41 @@ const mysql = require('mysql');
 const bodyParser = require('body-parser');
 
 // Create MySQL connection
-const connection = mysql.createConnection({
-  host: 'faizghazali.hopto.org',
-  user: 'faiz',
-  password: 'faiz',
-  database: 'mysql_node'
-});
+let connection;
 
-// Connect to MySQL
-connection.connect(err => {
-  if (err) {
-    console.error('Error connecting to MySQL: ' + err.stack);
-    return;
-  }
-  console.log('Connected to MySQL as id ' + connection.threadId);
-});
+function connectToMySQL() {
+  connection = mysql.createConnection({
+    host: 'faizghazali.hopto.org',
+    user: 'faiz',
+    password: 'faiz',
+    database: 'mysql_node'
+  });
 
+  // Attempt to connect to MySQL
+  connection.connect(err => {
+    if (err) {
+      console.error('Error connecting to MySQL: ' + err.stack);
+      // Retry connecting after a timeout
+      setTimeout(connectToMySQL, 5000); // Retry after 5 seconds
+      return;
+    }
+    console.log('Connected to MySQL as id ' + connection.threadId);
+  });
+
+  // Handle MySQL errors
+  connection.on('error', err => {
+    console.error('MySQL connection error: ' + err.stack);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+      // Reconnect if connection is lost
+      connectToMySQL();
+    } else {
+      throw err;
+    }
+  });
+}
+
+// Start connecting to MySQL
+connectToMySQL();
 
 // Create Express app
 const app = express();
@@ -27,7 +46,6 @@ const PORT = 6969;
 
 // Middleware to parse JSON body
 app.use(bodyParser.json());
-
 
 // Define a route to fetch user data
 app.get('/users', (req, res) => {
@@ -80,8 +98,7 @@ app.post('/api/data', (req, res) => {
   });
 });
 
-
-app.delete('/api/data',(req,res)=>{
+app.delete('/api/data', (req, res) => {
   const query = 'DELETE FROM monsters;';
   connection.query(query, (err, result) => {
     if (err) {
@@ -93,10 +110,8 @@ app.delete('/api/data',(req,res)=>{
     // Send a success response
     res.status(200).json({ message: 'All data deleted successfully' });
   });
-   
+
 });
-
-
 
 // Start the server
 app.listen(PORT, () => {
