@@ -2,6 +2,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
+const allDbPageRouter = require('./all-db-page');
 
 // Create MySQL connection
 let connection;
@@ -46,6 +47,7 @@ const PORT = 6969;
 
 // Middleware to parse JSON body
 app.use(bodyParser.json());
+app.use('/all-db-page', allDbPageRouter);
 
 // Define a route to fetch user data
 app.get('/users', (req, res) => {
@@ -112,6 +114,9 @@ app.delete('/api/data', (req, res) => {
   });
 
 });
+
+
+
 
 // Start the server
 app.listen(PORT, () => {
