@@ -45,7 +45,7 @@ connectToMySQL();
 
 // Create Express app
 const app = express();
-const PORT = 6969;
+const PORT = 7979;
 
 // Middleware to parse JSON body
 app.use(bodyParser.json());
