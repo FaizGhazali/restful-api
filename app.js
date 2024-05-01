@@ -3,6 +3,8 @@ const express = require('express');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const allDbPageRouter = require('./all-db-page');
+const cors = require('cors'); 
+const fs = require('fs');
 
 // Create MySQL connection
 let connection;
@@ -48,6 +50,16 @@ const PORT = 6969;
 // Middleware to parse JSON body
 app.use(bodyParser.json());
 app.use('/all-db-page', allDbPageRouter);
+
+//Music
+app.use(cors());
+
+app.get('/play', (req, res) => {
+  // Logic to stream music file
+  const musicFilePath = '/home/faiz/Music/ff.mp3';
+  const stream = fs.createReadStream(musicFilePath);
+  stream.pipe(res);
+});
 
 // Define a route to fetch user data
 app.get('/users', (req, res) => {

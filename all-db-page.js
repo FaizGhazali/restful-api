@@ -34,7 +34,7 @@ router.get('/', (req, res) => {
         // Check if the request wants JSON response
         if (req.headers['accept'] && req.headers['accept'].includes('application/json')) {
             // Send JSON response
-            res.json({ message: 'Welcome to the All Table', tables });
+            res.json({ message: 'Welcome to the All Table of ${database}', tables });
         } else {
             // Send HTML response
             res.send(responseBody);
